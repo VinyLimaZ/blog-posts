@@ -1,0 +1,50 @@
+Rake test
+
+O que são e como construi-las.
+
+Rake tasks são alguns dos misterios da linguagem Ruby para os (nós) iniciantes;
+Todos com certeza já rodaram uma ou varias tasks rake, como por exemplo: `db:migrate`,
+`db:rollback`, todas elas acompanhadas do executavel `rake` (Se pronuncia
+'reiqui'), mas o que é esse rake?
+Assim como praticamente todo codigo de terceiro na sua aplicação, nada mais é do
+que uma gem, que traz um executavel e algumas convenções.
+No seu terminal rode o comando `rake -T | less`, achou a task db:migrate? Pois
+aí estão todas as tasks disponiveis no seu projeto, rake é o inicializador
+dessas tarefas, quem executa.
+Mas o que é uma task?
+
+Tasks são, assim como tudo nessa linda linguagem, codigo ruby, vejamos o caso da
+task mais famosa:
+
+```
+namespace :db do
+  ...
+  desc "Migrate the database through scripts in db/migrate and update db/schema.rb by invoking db:schema:dump. Target specific version with VERSION=x. Turn off output with VERBOSE=false."
+  task :migrate => :environment do
+    ActiveRecord::Migration.verbose = ENV["VERBOSE"] ? ENV["VERBOSE"] == "true" : true
+    ActiveRecord::Migrator.migrate("db/migrate/", ENV["VERSION"] ? ENV["VERSION"].to_i : nil)
+    Rake::Task["db:schema:dump"].invoke if ActiveRecord::Base.schema_format == :ruby
+  end
+  ...
+end
+```
+
+Vamos desmembrar um pouco aqui alguns itens importantes para você começar a
+criar tasks rake:
+
+namespace: É o que o nome diz, aqui você reune todas as tasks relacionadas a esse
+sujeito, no nosso caso é `db:` e aqui você entende porque temos `db:migrate`,
+`db:test:prepare`, são divisões de namespace;
+
+desc: É a descrição da task, que aparece ao lado dela quando você executa com o -T;
+
+task: é o nome da tarefa e ultimo item necessario para execução da task em si;
+
+:enviroment: É uma dependencia, tasks podem precisar de outras para serem
+executadas, aqui você pode passar um array de dependencias se for o caso, no
+caso do `:enviroment`, sua função é carregar o diretorio da aplicação e carregar
+o config/enviroment.rb, que prepara o ambiente para o acesso da sua task aos
+componentes da sua aplicação, sem ele sua task rodará num ambiente Ruby, o que
+pode ser util se for o caso, mas não é o caso da tarefa acima.
+
+
